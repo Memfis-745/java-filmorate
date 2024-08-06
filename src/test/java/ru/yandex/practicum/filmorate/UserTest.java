@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserTest {
 
     @Test
-    void CreateCorrectUser() {
+    void createCorrectUser() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("email@mail.ru");
@@ -30,7 +30,7 @@ class UserTest {
     }
 
     @Test
-    void CreateUserWithoutEmail() {
+    void createUserWithoutEmail() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("");
@@ -43,7 +43,7 @@ class UserTest {
     }
 
     @Test
-    void CreateUserIncorrectEmail() {
+    void createUserIncorrectEmail() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya_vasya.ru");
@@ -56,7 +56,7 @@ class UserTest {
     }
 
     @Test
-    void CreateUserWithExistsEmail() {
+    void createUserWithExistsEmail() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
@@ -77,7 +77,7 @@ class UserTest {
     }
 
     @Test
-    void CreateUserWithoutLogin() {
+    void createUserWithoutLogin() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
@@ -90,7 +90,7 @@ class UserTest {
     }
 
     @Test
-    void CreateUserWithBirthdayInTheFuture() {
+    void createUserWithBirthdayInTheFuture() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
@@ -103,7 +103,7 @@ class UserTest {
     }
 
     @Test
-    void UpdateUser() {
+    void updateUser() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
@@ -124,7 +124,7 @@ class UserTest {
     }
 
     @Test
-    void UpdateNotExistUser() {
+    void updateNotExistUser() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
@@ -146,7 +146,7 @@ class UserTest {
     }
 
     @Test
-    void UpdateUserWithoutId() {
+    void updateUserWithoutId() {
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya_vasya.ru");

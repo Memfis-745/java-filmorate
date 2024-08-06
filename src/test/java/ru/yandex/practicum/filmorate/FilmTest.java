@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmTest {
 
     @Test
-    void CreateCorrectFilm() {
+    void createCorrectFilm() {
         FilmController filmController = new FilmController();
         Film film = new Film();
 
@@ -30,7 +30,7 @@ class FilmTest {
     }
 
     @Test
-    void CreateFilmWithoutName() {
+    void createFilmWithoutName() {
         FilmController filmController = new FilmController();
         Film film = new Film();
 
@@ -44,7 +44,7 @@ class FilmTest {
     }
 
     @Test
-    void CreateFilmWithBigDescription() {
+    void createFilmWithBigDescription() {
         FilmController filmController = new FilmController();
         Film film = new Film();
 
@@ -61,7 +61,7 @@ class FilmTest {
     }
 
     @Test
-    void CreateFilmWithNegativeDuration() {
+    void createFilmWithNegativeDuration() {
         FilmController filmController = new FilmController();
         Film film = new Film();
 
@@ -75,7 +75,7 @@ class FilmTest {
     }
 
     @Test
-    void CreateFilmBeforeEraKino() {
+    void createFilmBeforeEraKino() {
         FilmController filmController = new FilmController();
         Film film = new Film();
 
@@ -89,7 +89,7 @@ class FilmTest {
     }
 
     @Test
-    void UpdateFilm() {
+    void updateFilm() {
         FilmController filmController = new FilmController();
         Film film = new Film();
         film.setName("Jara");
@@ -110,7 +110,7 @@ class FilmTest {
     }
 
     @Test
-    void UpdateNotExistFilm() {
+    void updateNotExistFilm() {
         FilmController filmController = new FilmController();
         Film film = new Film();
         film.setName("Jara");
@@ -131,7 +131,7 @@ class FilmTest {
     }
 
     @Test
-    void UpdateFilmWithoutId() {
+    void updateFilmWithoutId() {
         FilmController filmController = new FilmController();
         Film film = new Film();
         film.setName("Very");
