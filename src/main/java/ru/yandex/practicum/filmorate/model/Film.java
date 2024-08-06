@@ -12,7 +12,6 @@ import java.time.LocalDate;
 @EqualsAndHashCode(exclude = {"name", "description", "releaseDate", "duration"})
 public class Film {
     private Long id = 0L;
-    ;
     private String name;
     private String description;
     private LocalDate releaseDate;
