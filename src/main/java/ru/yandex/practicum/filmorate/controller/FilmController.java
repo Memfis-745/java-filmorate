@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
+//import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
+//import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -12,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
+//@Validated
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -24,26 +28,11 @@ public class FilmController {
 
     @PostMapping
     public Film create(@RequestBody Film film) {
-        // проверяем выполнение необходимых условий
         log.info("Начало обработки запроса по добавлению фильма {}", film);
-        if (film.getName() == null || film.getName().isBlank()) {
-            throw new ConditionsNotMetException("Название не может быть пустым");
-        }
-        if (film.getDescription().length() > 200) {
-            throw new ConditionsNotMetException("Описание больше 200 знаков");
-        }
-        if (film.getDuration() <= 0) {
-            throw new ConditionsNotMetException("Длительность должна быть положительным числом");
-        }
 
-        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
-            throw new ConditionsNotMetException("Дата не может быть раньше 28.12.1895");
-        }
-        // формируем дополнительные данные.setId(getNextId());
+        validate(film);
         film.setId(getNextId());
-        // сохраняем новую публикацию в памяти приложения
         films.put(film.getId(), film);
-
         log.info("Конец обработки запроса по добавлению фильма {} и его id {}", film, film.getId());
         return film;
     }
@@ -51,8 +40,7 @@ public class FilmController {
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
         log.info("Начало обработки запроса по обновлению фильма: {} и его id {}", newFilm, newFilm.getId());
-        // проверяем необходимые условия
-        // System.out.println(newPost.getId());
+
         if (newFilm.getId() == 0) {
             throw new ConditionsNotMetException("Id должен быть указан");
         }
@@ -60,25 +48,11 @@ public class FilmController {
             Film film = films.get(newFilm.getId());
             log.info("Старый фильм {} и его id {}", film, film.getId());
 
-            if (!(newFilm.getName() == null || newFilm.getName().isBlank())) {
-                film.setName(newFilm.getName());
-            }
-            if (film.getDescription().length() > 200) {
-                throw new ConditionsNotMetException("Описание больше 200 знаков");
-            } else {
-                film.setDescription(newFilm.getDescription());
-            }
-            if (film.getDuration() <= 0) {
-                throw new ConditionsNotMetException("Длительность должна быть положительным числом");
-            } else {
-                film.setDuration(newFilm.getDuration());
-            }
-            if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
-                throw new ConditionsNotMetException("Дата не может быть раньше 28.12.1895");
-            } else {
-                film.setReleaseDate(newFilm.getReleaseDate());
-            }
-            // если публикация найдена и все условия соблюдены, обновляем её содержимое
+            validate(newFilm);
+            film.setName(newFilm.getName());
+            film.setDuration(newFilm.getDuration());
+            film.setReleaseDate(newFilm.getReleaseDate());
+            film.setDescription(newFilm.getDescription());
             log.info("Результат операции по обновлению фильма {} и его id {}", film, film.getId());
             return film;
         } else {
@@ -94,5 +68,23 @@ public class FilmController {
                 .orElse(0);
         return ++currentMaxId;
     }
+
+    private void validate(Film film) {
+        if (film.getName() == null || film.getName().isBlank()) {
+            throw new ConditionsNotMetException("Название не может быть пустым");
+        }
+        if (film.getDescription().length() > 200) {
+            throw new ConditionsNotMetException("Описание больше 200 знаков");
+        }
+        if (film.getDuration() <= 0) {
+            throw new ConditionsNotMetException("Длительность должна быть положительным числом");
+        }
+
+        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
+            throw new ConditionsNotMetException("Дата не может быть раньше 28.12.1895");
+        }
+    }
+
+
 }
 
