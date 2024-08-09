@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
-//import jakarta.validation.Valid;
-
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -15,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-//@Validated
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -27,7 +24,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         log.info("Начало обработки запроса по добавлению фильма {}", film);
 
         validate(film);
@@ -70,16 +67,6 @@ public class FilmController {
     }
 
     private void validate(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            throw new ConditionsNotMetException("Название не может быть пустым");
-        }
-        if (film.getDescription().length() > 200) {
-            throw new ConditionsNotMetException("Описание больше 200 знаков");
-        }
-        if (film.getDuration() <= 0) {
-            throw new ConditionsNotMetException("Длительность должна быть положительным числом");
-        }
-
         if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
             throw new ConditionsNotMetException("Дата не может быть раньше 28.12.1895");
         }

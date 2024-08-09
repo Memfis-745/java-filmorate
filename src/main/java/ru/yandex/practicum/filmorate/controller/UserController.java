@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
@@ -8,7 +9,6 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,9 +25,8 @@ public class UserController {
         return users.values();
     }
 
-    // long id; String username; String email; String password; Instant registrationDate;
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         log.info("Начало обработки запроса по добавлению нового пользователя {}", user);
         validate(user);
         for (User i : users.values()) {
@@ -46,7 +45,7 @@ public class UserController {
 
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
+    public User update(@Valid @RequestBody User newUser) {
         log.info("Запрос на изменение пользователя на {}", newUser);
         if (newUser.getId() == 0) {
             throw new ConditionsNotMetException("Id должен быть указан");
@@ -60,11 +59,8 @@ public class UserController {
             user.setLogin(newUser.getLogin());
             user.setName(newUser.getName());
 
-            if (user.getBirthday().isAfter(LocalDate.now())) {
-                throw new ConditionsNotMetException("Дата не может быть в будущем");
-            } else {
-                user.setBirthday(newUser.getBirthday());
-            }
+            user.setBirthday(newUser.getBirthday());
+
 
             log.info("Старый пользователь по этому id {}", user);
             return user;
@@ -84,20 +80,11 @@ public class UserController {
     }
 
     private void validate(User user) {
-        if (user.getEmail() == null || !(user.getEmail().contains("@"))) {
-            log.trace("Проверка е-мейла нового пользователя {}", user.getEmail());
-            throw new ConditionsNotMetException("Е-мейл должен быть корректен");
-        }
-
-        if ((user.getLogin() == null) || user.getLogin().isBlank()) {
-            throw new ConditionsNotMetException("Логин должен быть указан");
-        }
+        log.trace("Проверка имени нового пользователя {}", user.getName());
         if ((user.getName() == null) || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        log.trace("Проверка даты рождения нового пользователя {}", user.getBirthday());
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ConditionsNotMetException("Дата не может быть в будущем");
-        }
+
+
     }
 }

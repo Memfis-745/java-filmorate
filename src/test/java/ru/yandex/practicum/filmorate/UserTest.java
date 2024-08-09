@@ -1,21 +1,37 @@
 package ru.yandex.practicum.filmorate;
 
-
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
+import jakarta.validation.Validator;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserTest {
+    private Validator validator;
+
+    @Before
+    public void init() {
+
+        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
+        this.validator = vf.getValidator();
+
+    }
 
     @Test
     void createCorrectUser() {
@@ -30,29 +46,47 @@ class UserTest {
     }
 
     @Test
+    void createFilmWithoutName() {
+
+        FilmController filmController = new FilmController();
+        Film film = new Film();
+
+        film.setName("");
+        film.setDescription("Very strong jara");
+        film.setReleaseDate(LocalDate.of(1990, 1, 12));
+        film.setDuration(120);
+        Film filmCont = filmController.create(film);
+
+    }
+
+    @Test
     void createUserWithoutEmail() {
+        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
+        this.validator = vf.getValidator();
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("");
         user.setLogin("login");
         user.setName("name");
         user.setBirthday(LocalDate.of(1990, 1, 12));
-        assertThrows(ConditionsNotMetException.class, () -> {
-            userController.create(user);
-        });
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+
     }
 
     @Test
     void createUserIncorrectEmail() {
+        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
+        this.validator = vf.getValidator();
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya_vasya.ru");
         user.setLogin("login");
         user.setName("name");
         user.setBirthday(LocalDate.of(1990, 1, 12));
-        assertThrows(ConditionsNotMetException.class, () -> {
-            userController.create(user);
-        });
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
@@ -78,28 +112,30 @@ class UserTest {
 
     @Test
     void createUserWithoutLogin() {
+        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
+        this.validator = vf.getValidator();
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
         user.setLogin("");
         user.setName("name");
         user.setBirthday(LocalDate.of(1990, 1, 12));
-        assertThrows(ConditionsNotMetException.class, () -> {
-            userController.create(user);
-        });
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
     void createUserWithBirthdayInTheFuture() {
+        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
+        this.validator = vf.getValidator();
         UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
         user.setLogin("kolya");
         user.setName("name");
         user.setBirthday(LocalDate.of(2025, 1, 12));
-        assertThrows(ConditionsNotMetException.class, () -> {
-            userController.create(user);
-        });
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
