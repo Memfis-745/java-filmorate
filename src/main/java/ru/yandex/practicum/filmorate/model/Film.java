@@ -2,19 +2,21 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 /**
  * Film.
  */
 @Data
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor
 @EqualsAndHashCode(exclude = {"name", "description", "releaseDate", "duration"})
 public class Film {
     private Long id = 0L;
-    @NotNull
     @NotBlank(message = "Название не может быть пустым")
     private String name;
     @NotNull
@@ -24,5 +26,6 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private int duration;
+    Set<Long> likes;
 
 }

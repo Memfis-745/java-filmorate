@@ -1,12 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import java.time.LocalDate;
 
+import java.util.Set;
+
 @Data
+@AllArgsConstructor
+@Builder
+@NoArgsConstructor
 @EqualsAndHashCode(exclude = {"email", "login", "name", "birthday"})
 public class User {
     private Long id = 0L;
@@ -20,5 +24,7 @@ public class User {
     @NotNull
     @PastOrPresent
     private LocalDate birthday;
+    Set<Long> friends;
+    Set<Long> filmIdLiked;
 
 }

@@ -2,76 +2,84 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
-import java.util.Collection;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@Component
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
+    static final String pathForLike = "/{id}/like/{userId}";
+    FilmService filmService;
+    UserService userService;
+
+    @Autowired
+    public FilmController(FilmService filmService, UserService userService) {
+        this.filmService = filmService;
+        this.userService = userService;
+    }
+
+    public FilmController() {
+
+    }
 
     @GetMapping
-    public Collection<Film> findAll() {
-        return films.values();
+    public List<Film> findAll() {
+        log.info("Поиск всех фильмов по полулярности");
+        return filmService.getAllFilms();
+    }
+
+    @GetMapping(value = "/{id}")
+    public Film findFilm(@PathVariable long id) {
+        log.info("Поиск фильмов по id {}", id);
+        return filmService.getFilm(id);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> findPopularFilms(@RequestParam(required = false) Integer count) {
+        log.info("Список {} фильмов по полулярности", count);
+
+        return filmService.getPopularFilms(count);
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) throws ValidationException {
         log.info("Начало обработки запроса по добавлению фильма {}", film);
-
-        validate(film);
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Конец обработки запроса по добавлению фильма {} и его id {}", film, film.getId());
-        return film;
+        return filmService.createFilm(film);
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
+    public Film update(@Valid @RequestBody Film newFilm) throws ValidationException {
         log.info("Начало обработки запроса по обновлению фильма: {} и его id {}", newFilm, newFilm.getId());
 
-        if (newFilm.getId() == 0) {
-            throw new ConditionsNotMetException("Id должен быть указан");
-        }
-        if (films.containsKey(newFilm.getId())) {
-            Film film = films.get(newFilm.getId());
-            log.info("Старый фильм {} и его id {}", film, film.getId());
+        return filmService.updateFilm(newFilm);
 
-            validate(newFilm);
-            film.setName(newFilm.getName());
-            film.setDuration(newFilm.getDuration());
-            film.setReleaseDate(newFilm.getReleaseDate());
-            film.setDescription(newFilm.getDescription());
-            log.info("Результат операции по обновлению фильма {} и его id {}", film, film.getId());
-            return film;
-        } else {
-            throw new NotFoundException("Пост с id = " + newFilm.getId() + " не найден");
-        }
     }
 
-    private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @PutMapping(value = pathForLike)
+    public void addLikeFilm(@PathVariable Long id, @PathVariable Long userId) {
+        log.info("Добавление лайка фильму: {} пользователем {}", id, userId);
+
+        filmService.addLike(id, userId);
     }
 
-    private void validate(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
-            throw new ConditionsNotMetException("Дата не может быть раньше 28.12.1895");
-        }
-    }
+    @DeleteMapping(value = pathForLike)
+    public void deleteLike(@PathVariable Long id, @PathVariable Long userId) {
+        log.info("Удаление лайка фильму: {} пользователем {}", id, userId);
 
+        filmService.deleteLike(id, userId);
+    }
 
 }
-

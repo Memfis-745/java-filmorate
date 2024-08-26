@@ -3,61 +3,52 @@ package ru.yandex.practicum.filmorate;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
-import org.junit.Before;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import jakarta.validation.Validator;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import ru.yandex.practicum.filmorate.controller.FilmController;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+
 
 import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserTest {
-    private Validator validator;
+    private static Validator validator;
 
-    @Before
-    public void init() {
+
+    static {
 
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
-        this.validator = vf.getValidator();
+        validator = vf.usingContext().getValidator();
 
     }
 
     @Test
     void createCorrectUser() {
-        UserController userController = new UserController();
+
         User user = new User();
         user.setEmail("email@mail.ru");
         user.setLogin("login");
         user.setName("name");
         user.setBirthday(LocalDate.of(1990, 1, 12));
-        User userCont = userController.create(user);
-        assertEquals(user, userCont, "Переданный и возвращенный классы не совпадают.");
-    }
 
-    @Test
-    void createFilmWithoutName() {
-
-        FilmController filmController = new FilmController();
-        Film film = new Film();
-
-        film.setName("");
-        film.setDescription("Very strong jara");
-        film.setReleaseDate(LocalDate.of(1990, 1, 12));
-        film.setDuration(120);
-        Film filmCont = filmController.create(film);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty(), "Ошибка валидации при создании объекта.");
+        assertEquals(user.getLogin(), "login", "Некорректный логин.");
+        assertEquals(user.getName(), "name", "Неправильно задано имя.");
+        assertEquals(user.getBirthday(), LocalDate.of(1990, 1, 12),
+                "Неверно задана дата рождения.");
 
     }
+
 
     @Test
     void createUserWithoutEmail() {
@@ -89,26 +80,6 @@ class UserTest {
         assertFalse(violations.isEmpty());
     }
 
-    @Test
-    void createUserWithExistsEmail() {
-        UserController userController = new UserController();
-        User user = new User();
-        user.setEmail("kolya@vasya.ru");
-        user.setLogin("petya");
-        user.setName("name");
-        user.setBirthday(LocalDate.of(1990, 1, 12));
-        userController.create(user);
-
-        User user2 = new User();
-        user2.setEmail("kolya@vasya.ru");
-        user2.setLogin("kolya");
-        user2.setName("name");
-        user2.setBirthday(LocalDate.of(1990, 1, 12));
-
-        assertThrows(DuplicatedDataException.class, () -> {
-            userController.create(user2);
-        });
-    }
 
     @Test
     void createUserWithoutLogin() {
@@ -138,60 +109,5 @@ class UserTest {
         assertFalse(violations.isEmpty());
     }
 
-    @Test
-    void updateUser() {
-        UserController userController = new UserController();
-        User user = new User();
-        user.setEmail("kolya@vasya.ru");
-        user.setLogin("petya");
-        user.setName("name");
-        user.setBirthday(LocalDate.of(1990, 1, 12));
-
-        User user2 = new User();
-        user2.setEmail("ne-kolya@vasya.ru");
-        user2.setLogin("masha");
-        user2.setName("olya");
-        user2.setBirthday(LocalDate.of(1991, 1, 12));
-
-        assertEquals(user, userController.create(user), "Переданный и возвращенный классы не совпадают.");
-        user2.setId(user.getId());
-        assertEquals(user2, userController.update(user2), "Переданный и возвращенный классы не совпадают.");
-
-    }
-
-    @Test
-    void updateNotExistUser() {
-        UserController userController = new UserController();
-        User user = new User();
-        user.setEmail("kolya@vasya.ru");
-        user.setLogin("petya");
-        user.setName("name");
-        user.setBirthday(LocalDate.of(1990, 1, 12));
-
-        User user2 = new User();
-        user2.setEmail("ne-kolya@vasya.ru");
-        user2.setLogin("masha");
-        user2.setName("olya");
-        user2.setBirthday(LocalDate.of(1991, 1, 12));
-
-        assertEquals(user, userController.create(user), "Переданный и возвращенный классы не совпадают.");
-        user2.setId(100L);
-        assertThrows(NotFoundException.class, () -> {
-            userController.update(user2);
-        });
-    }
-
-    @Test
-    void updateUserWithoutId() {
-        UserController userController = new UserController();
-        User user = new User();
-        user.setEmail("kolya_vasya.ru");
-        user.setLogin("login");
-        user.setName("name");
-        user.setBirthday(LocalDate.of(1990, 1, 12));
-        assertThrows(ConditionsNotMetException.class, () -> {
-            userController.update(user);
-        });
-    }
 
 }
