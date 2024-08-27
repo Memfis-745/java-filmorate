@@ -3,9 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,26 +13,14 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.*;
 
-@Component
+@RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/users")
 @RestController
 @Getter
-//@Validated
 public class UserController {
-    FilmService filmService;
-    UserService userService;
-
-    @Autowired
-    public UserController(FilmService filmService, UserService userService) {
-        this.filmService = filmService;
-        this.userService = userService;
-    }
-
-    public UserController() {
-
-    }
-
+    private final FilmService filmService;
+    private final UserService userService;
     private final Map<Long, User> users = new HashMap<>();
     static final String pathForFriends = "/{id}/friends/{" +
             "friendId}";

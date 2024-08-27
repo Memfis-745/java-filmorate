@@ -1,15 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,23 +15,13 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/films")
-@Component
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
     static final String pathForLike = "/{id}/like/{userId}";
-    FilmService filmService;
-    UserService userService;
+    private final FilmService filmService;
 
-    @Autowired
-    public FilmController(FilmService filmService, UserService userService) {
-        this.filmService = filmService;
-        this.userService = userService;
-    }
-
-    public FilmController() {
-
-    }
 
     @GetMapping
     public List<Film> findAll() {

@@ -11,21 +11,16 @@ import java.util.*;
 @Service
 public interface FilmStorage {
 
-    public Film createFilm(Film film) throws ValidationException;
+    Film createFilm(Film film) throws ValidationException;
 
-    public void deleteFilm(long id);
+    void deleteFilm(long id);
 
-    public Film updateFilm(Film film);
+    Film updateFilm(Film film);
 
-    public Film getFilm(long id);
+    Film getFilm(long id);
 
-    public List<Film> showAllFilms();
+    List<Film> showAllFilms();
 
-    public default HashMap<Long, Film> getFilmHashMap() {
-        return null;
-    }
+    List<Long> getFilmHashKey();
 
-    ;
-
-    // Map<Object, Object> getFilmHashMap();
 }

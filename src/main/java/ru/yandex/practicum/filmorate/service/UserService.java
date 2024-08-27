@@ -1,10 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -15,17 +14,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @Getter
+@RequiredArgsConstructor
 public class UserService {
 
-    final UserStorage userStorage;
-    final Validation validation;
-
-
-    @Autowired
-    public UserService(UserStorage userStorage, Validation validation) {
-        this.userStorage = userStorage;
-        this.validation = validation;
-    }
+    private final UserStorage userStorage;
+    private final Validation validation;
 
 
     public List<User> getAllUsers() {
@@ -40,51 +33,45 @@ public class UserService {
     }
 
     public List<User> getUserFriends(long id) {
-        try {
-            validation.validId(id);
-            validation.validUser(id);
 
-            if (getUser(id).getFriends() == null) {
-                log.info("У пользователя {} нет друзей", id);
-                return new ArrayList<>();
-            } else {
-                List<User> friends = new ArrayList<>();
-                for (long idUser : getUser(id).getFriends()) {
-                    friends.add(getUser(idUser));
-                }
-                return friends;
+        validation.validId(id);
+        validation.validUser(id);
+
+        if (getUser(id).getFriends() == null) {
+            log.info("У пользователя {} нет друзей", id);
+            return new ArrayList<>();
+        } else {
+            List<User> friends = new ArrayList<>();
+            for (long idUser : getUser(id).getFriends()) {
+                friends.add(getUser(idUser));
             }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(" id должен быть числом");
+            return friends;
         }
     }
 
     public List<User> getCommonFriends(Long userId, Long friendId) {
-        try {
-            validation.validId(userId);
-            validation.validId(friendId);
-            validation.validUser(userId);
-            validation.validUser(friendId);
-            validation.validUserFriends(userId);
-            validation.validUserFriends(friendId);
 
-            User user = getUser(userId);
-            User friend = getUser(friendId);
+        validation.validId(userId);
+        validation.validId(friendId);
+        validation.validUser(userId);
+        validation.validUser(friendId);
+        validation.validUserFriends(userId);
+        validation.validUserFriends(friendId);
 
-            List<Long> commonFriends = new ArrayList<>();
-            commonFriends = user.getFriends().stream()
-                    .filter(id -> friend.getFriends().contains(id))
-                    .collect(Collectors.toList());
+        User user = getUser(userId);
+        User friend = getUser(friendId);
 
-            List<User> users = new ArrayList<>();
-            for (long idUser : commonFriends) {
-                users.add(getUser(idUser));
-            }
-            log.info("Общие друзья y {} и {} : {}", user, friend, users);
-            return users;
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(" id должен быть числом");
+        List<Long> commonFriends = new ArrayList<>();
+        commonFriends = user.getFriends().stream()
+                .filter(id -> friend.getFriends().contains(id))
+                .collect(Collectors.toList());
+
+        List<User> users = new ArrayList<>();
+        for (long idUser : commonFriends) {
+            users.add(getUser(idUser));
         }
+        log.info("Общие друзья y {} и {} : {}", user, friend, users);
+        return users;
     }
 
     public User create(User user) {
@@ -98,77 +85,65 @@ public class UserService {
     }
 
     public User delete(Long id) {
-        try {
-            validation.validId(id);
-            validation.validUser(id);
-            userStorage.deleteUser(id);
-            return null;
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(" id должен быть числом");
-        }
+
+        validation.validId(id);
+        validation.validUser(id);
+        userStorage.deleteUser(id);
+        return null;
     }
 
     public User update(User user) {
-        try {
-            validation.userName(user);
-            validation.validUser(user.getId());
-            return userStorage.update(user);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(" id должен быть числом");
-        }
+
+        validation.userName(user);
+        validation.validUser(user.getId());
+        return userStorage.update(user);
+
     }
 
     public List<User> addFriend(long id, long friendId) {
-        try {
-            validation.validId(id);
-            validation.validId(friendId);
 
-            validation.validUser(id);
-            validation.validUser(friendId);
+        validation.validId(id);
+        validation.validId(friendId);
 
-            User user = getUser(id);
-            User userFriend = getUser(friendId);
-            log.info("Добавление пользователя {} в друзья к {}", userFriend, user);
+        validation.validUser(id);
+        validation.validUser(friendId);
 
-            if (user.getId() == userFriend.getId()) {
-                log.info("id пользователя {} и его друга совпадают {}", user.getId(), userFriend.getId());
-                throw new DuplicatedDataException("Пользователь, уже в друзьях");
-            }
-            try {
-                addFriends(user, userFriend.getId());
-                addFriends(userFriend, user.getId());
-                log.info("Данные из хранилища: Юзер {} и френд {}", getUser(id), getUser(friendId));
-            } catch (DuplicatedDataException e) {
-                throw new DuplicatedDataException("Пользователь, уже в друзьях");
-            }
+        User user = getUser(id);
+        User userFriend = getUser(friendId);
+        log.info("Добавление пользователя {} в друзья к {}", userFriend, user);
 
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Неверный формат id и friendId");
+        if (user.getId() == userFriend.getId()) {
+            log.info("id пользователя {} и его друга совпадают {}", user.getId(), userFriend.getId());
+            throw new DuplicatedDataException("Пользователь, уже в друзьях");
         }
+        try {
+            addFriends(user, userFriend.getId());
+            addFriends(userFriend, user.getId());
+            log.info("Данные из хранилища: Юзер {} и френд {}", getUser(id), getUser(friendId));
+        } catch (DuplicatedDataException e) {
+            throw new DuplicatedDataException("Пользователь, уже в друзьях");
+        }
+
         return null;
     }
 
     public void removeFriend(long id, long friendId) {
-        try {
-            validation.validId(id);
-            validation.validId(friendId);
+        validation.validId(id);
+        validation.validId(friendId);
 
-            validation.validUser(id);
-            validation.validUser(friendId);
+        validation.validUser(id);
+        validation.validUser(friendId);
 
-            User user = getUser(id);
-            User friend = getUser(friendId);
+        User user = getUser(id);
+        User friend = getUser(friendId);
 
-            if ((user.getFriends() != null) & (friend.getFriends() != null)) {
-                if (user.getFriends().contains(friendId)) {
-                    user.getFriends().remove(friendId);
-                    friend.getFriends().remove(id);
-                    log.info("У пользователя {} удален друг  {}", user, friend);
-                    log.info("У пользователя {} удален друг  {}", friend, user);
-                }
+        if ((user.getFriends() != null) & (friend.getFriends() != null)) {
+            if (user.getFriends().contains(friendId)) {
+                user.getFriends().remove(friendId);
+                friend.getFriends().remove(id);
+                log.info("У пользователя {} удален друг  {}", user, friend);
+                log.info("У пользователя {} удален друг  {}", friend, user);
             }
-        } catch (ConditionsNotMetException e) {
-            throw new ConditionsNotMetException("Параметры id и friendId должны быть числами");
         }
     }
 

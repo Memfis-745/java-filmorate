@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserTest {
     private static Validator validator;
-
+    private static UserController userController;
 
     static {
 
@@ -54,7 +54,6 @@ class UserTest {
     void createUserWithoutEmail() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
-        UserController userController = new UserController();
         User user = new User();
         user.setEmail("");
         user.setLogin("login");
@@ -70,7 +69,6 @@ class UserTest {
     void createUserIncorrectEmail() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
-        UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya_vasya.ru");
         user.setLogin("login");
@@ -85,7 +83,6 @@ class UserTest {
     void createUserWithoutLogin() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
-        UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
         user.setLogin("");
@@ -99,7 +96,6 @@ class UserTest {
     void createUserWithBirthdayInTheFuture() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
-        UserController userController = new UserController();
         User user = new User();
         user.setEmail("kolya@vasya.ru");
         user.setLogin("kolya");

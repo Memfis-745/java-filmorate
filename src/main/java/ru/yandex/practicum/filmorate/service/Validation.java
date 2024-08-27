@@ -21,7 +21,6 @@ public class Validation {
 
     private final UserStorage userStorage;
 
-
     public void validId(Long id) {
         if (id == null) {
             throw new ConditionsNotMetException("id не должен быть null");
@@ -29,13 +28,13 @@ public class Validation {
     }
 
     public void validUser(Long id) {
-        if (!userStorage.getUserHashMap().containsKey(id)) {
+        if (!userStorage.getUserHashKey().contains(id)) {
             throw new NotFoundException("Юзер с id = " + id + " не найден");
         }
     }
 
     public void validUserFriends(Long id) {
-        User user = userStorage.getUserHashMap().get(id);
+        User user = userStorage.getUser(id);
         if (user.getFriends() == null) {
             throw new NotFoundException("У пользователя = " + user + " нет друзей");
         }
@@ -49,7 +48,7 @@ public class Validation {
     }
 
     public void validFilm(Long id) {
-        if (!filmStorage.getFilmHashMap().containsKey(id)) {
+        if (!filmStorage.getFilmHashKey().contains(id)) {
             throw new NotFoundException("Юзер с id = " + id + " не найден");
         }
     }

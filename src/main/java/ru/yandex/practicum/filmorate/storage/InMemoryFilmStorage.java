@@ -52,6 +52,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
+    public List<Long> getFilmHashKey() {
+        return new ArrayList<>(filmHashMap.keySet());
+    }
+
     @Override
     public Film getFilm(long id) {
 

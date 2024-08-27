@@ -21,7 +21,6 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.model.Film;
 
 
-
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -30,13 +29,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmTest {
     static Validator validator;
+    static FilmController filmController;
 
 
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.usingContext().getValidator();
     }
-
 
     @SneakyThrows
 
@@ -61,9 +60,8 @@ class FilmTest {
     void createFilmWithBigDescription() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
-        FilmController filmController = new FilmController();
-        Film film = new Film();
 
+        Film film = new Film();
         film.setName("Jara");
         film.setDescription("   weuc    wuciui  qwpoxunuhe wuocnwjenw sdcwuecn  qkmbu qwecnqwoecu" +
                 "WDSCIHOGWEYQW DCKJBWCIUOWE jshcuiercuie celknruiofu3nf  rcqjnrcuwqec" +
@@ -79,7 +77,6 @@ class FilmTest {
     void createFilmWithNegativeDuration() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
-        FilmController filmController = new FilmController();
         Film film = new Film();
 
         film.setName("Jara");
@@ -92,9 +89,7 @@ class FilmTest {
 
     @Test
     void createFilmBeforeEraKino() {
-        FilmController filmController = new FilmController();
         Film film = new Film();
-
         film.setName("Jara");
         film.setDescription("Very strong jara");
         film.setReleaseDate(LocalDate.of(1495, 1, 12));
@@ -104,10 +99,8 @@ class FilmTest {
         });
     }
 
-
     @Test
     void updateFilmWithoutId() {
-        FilmController filmController = new FilmController();
         Film film = new Film();
         film.setName("Very");
         film.setDescription("Very strong jara");

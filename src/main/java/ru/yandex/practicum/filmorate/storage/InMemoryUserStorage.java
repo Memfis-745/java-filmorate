@@ -34,6 +34,10 @@ public class InMemoryUserStorage implements UserStorage {
         return new ArrayList<>(userHashMap.values());
     }
 
+    public List<Long> getUserHashKey() {
+        return new ArrayList<>(userHashMap.keySet());
+    }
+
     @Override
     public User getUser(long id) {
         return userHashMap.get(id);
