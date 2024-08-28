@@ -22,7 +22,7 @@ public class UserController {
     private final FilmService filmService;
     private final UserService userService;
     private final Map<Long, User> users = new HashMap<>();
-    static final String pathForFriends = "/{id}/friends/{" +
+    private static final String pathForFriends = "/{id}/friends/{" +
             "friendId}";
 
     @GetMapping

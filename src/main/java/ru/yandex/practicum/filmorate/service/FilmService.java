@@ -39,21 +39,12 @@ public class FilmService {
             count = 10;
         }
 
-        List<Film> films = getAllFilms().stream()
+        List<Film> popularFilms = getAllFilms().stream()
                 .filter(e -> e.getLikes() != null)
                 .sorted((o1, o2) -> Integer.compare(o2.getLikes().size(), o1.getLikes().size()))
+                .limit(count)
                 .collect(Collectors.toList());
 
-        List<Film> popularFilms = new ArrayList<>();
-        if (films.size() > count) {
-            for (int i = 0; i < count; i++) {
-                popularFilms.add(films.get(i));
-            }
-        } else {
-            for (int i = 0; i < films.size(); i++) {
-                popularFilms.add(films.get(i));
-            }
-        }
         return popularFilms;
     }
 

@@ -19,7 +19,7 @@ import java.util.Map;
 @RequestMapping("/films")
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
-    static final String pathForLike = "/{id}/like/{userId}";
+    private static final String pathForLike = "/{id}/like/{userId}";
     private final FilmService filmService;
 
 
