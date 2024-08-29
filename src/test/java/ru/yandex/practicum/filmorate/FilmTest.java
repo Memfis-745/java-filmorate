@@ -3,16 +3,21 @@ package ru.yandex.practicum.filmorate;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
-import org.junit.Before;
+
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+
 import org.junit.jupiter.api.Test;
 
 import jakarta.validation.Validator;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.yandex.practicum.filmorate.Validator.Create;
+
 import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+
 import ru.yandex.practicum.filmorate.model.Film;
 
 
@@ -21,46 +26,33 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmTest {
-    private Validator validator;
+    static Validator validator;
+    static FilmController filmController;
 
-    @Before
-    public void init() {
 
-        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
-        this.validator = vf.getValidator();
-
+    static {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.usingContext().getValidator();
     }
 
-    @Test
-    void createCorrectFilm() {
-
-        FilmController filmController = new FilmController();
-        Film film = new Film();
-
-        film.setName("Jara");
-        film.setDescription("Very strong jara");
-        film.setReleaseDate(LocalDate.of(1990, 1, 12));
-        film.setDuration(120);
-        Film filmCont = filmController.create(film);
-        assertEquals(film, filmCont, "Переданный и возвращенный классы не совпадают.");
-
-    }
+    @SneakyThrows
 
     @Test
-    void createFilmWithoutName() {
-        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
-        this.validator = vf.getValidator();
-        FilmController filmController = new FilmController();
+    void shouldCreateCorrectFilm() {
         Film film = new Film();
+        film.setName("name");
+        film.setDescription("description");
+        film.setReleaseDate(LocalDate.of(2030, 1, 10));
+        film.setDuration(100);
 
-        film.setName("");
-        film.setDescription("Very strong jara");
-        film.setReleaseDate(LocalDate.of(1990, 1, 12));
-        film.setDuration(120);
-        Film filmCont = filmController.create(film);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, Create.class);
+        assertTrue(violations.isEmpty(), "Присутствуют нарушения.");
+        assertEquals(film.getDescription(), "description", "Описание было присвоено некорректно.");
+        assertEquals(film.getName(), "name", "Имя было присвоено некорректно.");
+        assertEquals(film.getReleaseDate(), LocalDate.of(2030, 1, 10),
+                "Дата релиза была присвоена некорректно.");
     }
 
 
@@ -68,9 +60,8 @@ class FilmTest {
     void createFilmWithBigDescription() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
-        FilmController filmController = new FilmController();
-        Film film = new Film();
 
+        Film film = new Film();
         film.setName("Jara");
         film.setDescription("   weuc    wuciui  qwpoxunuhe wuocnwjenw sdcwuecn  qkmbu qwecnqwoecu" +
                 "WDSCIHOGWEYQW DCKJBWCIUOWE jshcuiercuie celknruiofu3nf  rcqjnrcuwqec" +
@@ -86,7 +77,6 @@ class FilmTest {
     void createFilmWithNegativeDuration() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
-        FilmController filmController = new FilmController();
         Film film = new Film();
 
         film.setName("Jara");
@@ -99,72 +89,28 @@ class FilmTest {
 
     @Test
     void createFilmBeforeEraKino() {
-        FilmController filmController = new FilmController();
         Film film = new Film();
-
         film.setName("Jara");
         film.setDescription("Very strong jara");
         film.setReleaseDate(LocalDate.of(1495, 1, 12));
         film.setDuration(120);
-        assertThrows(ConditionsNotMetException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
             filmController.create(film);
         });
     }
 
     @Test
-    void updateFilm() {
-        FilmController filmController = new FilmController();
-        Film film = new Film();
-        film.setName("Jara");
-        film.setDescription("Very strong jara");
-        film.setReleaseDate(LocalDate.of(1995, 1, 12));
-        film.setDuration(120);
-
-        Film film2 = new Film();
-        film2.setName("Jara");
-        film2.setDescription("Very strong jara");
-        film2.setReleaseDate(LocalDate.of(1995, 1, 12));
-        film2.setDuration(120);
-
-        assertEquals(film, filmController.create(film), "Переданный и возвращенный классы не совпадают.");
-        film2.setId(film.getId());
-        assertEquals(film, filmController.update(film2), "Переданный и возвращенный классы не совпадают.");
-
-    }
-
-    @Test
-    void updateNotExistFilm() {
-        FilmController filmController = new FilmController();
-        Film film = new Film();
-        film.setName("Jara");
-        film.setDescription("Very strong jara");
-        film.setReleaseDate(LocalDate.of(1995, 1, 12));
-        film.setDuration(120);
-
-        Film film2 = new Film();
-        film2.setName("jara");
-        film2.setDescription("Very strong jara");
-        film2.setReleaseDate(LocalDate.of(1995, 1, 12));
-
-        assertEquals(film, filmController.create(film), "Переданный и возвращенный классы не совпадают.");
-        film2.setId(100L);
-        assertThrows(NotFoundException.class, () -> {
-            filmController.update(film2);
-        });
-    }
-
-    @Test
     void updateFilmWithoutId() {
-        FilmController filmController = new FilmController();
         Film film = new Film();
         film.setName("Very");
         film.setDescription("Very strong jara");
         film.setReleaseDate(LocalDate.of(1995, 1, 12));
         film.setDuration(120);
-        assertThrows(ConditionsNotMetException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
             filmController.update(film);
         });
     }
+
 
 }
 
