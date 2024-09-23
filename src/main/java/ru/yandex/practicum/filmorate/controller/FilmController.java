@@ -9,19 +9,15 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
-    private final Map<Long, Film> films = new HashMap<>();
-    private static final String pathForLike = "/{id}/like/{userId}";
     private final FilmService filmService;
-
+    private static final String pathForLike = "/{id}/like/{userId}";
 
     @GetMapping
     public List<Film> findAll() {

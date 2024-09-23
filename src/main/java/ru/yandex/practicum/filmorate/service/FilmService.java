@@ -1,36 +1,34 @@
 package ru.yandex.practicum.filmorate.service;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.GenreRepository;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
+import ru.yandex.practicum.filmorate.repository.MpaRepository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-
-    private final FilmStorage filmStorage;
-    private final UserService userService;
+    private final FilmRepository filmRepository;
+    private final UserRepository userRepository;
+    private final MpaRepository mpaRepository;
+    private final GenreRepository genreRepository;
     private final Validation validation;
 
     public List<Film> getAllFilms() {
+        return filmRepository.findAllFilms();
 
-        return filmStorage.showAllFilms();
     }
 
     public Film getFilm(long id) {
-        validation.validId(id);
-        validation.validFilm(id);
-        return filmStorage.getFilm(id);
+        return filmRepository.getFilm(id).orElseThrow(() -> new NotFoundException("Фильм с id - " + id + " не найден"));
     }
 
     public List<Film> getPopularFilms(Integer count) {
@@ -38,99 +36,54 @@ public class FilmService {
         if (count == null) {
             count = 10;
         }
-
-        List<Film> popularFilms = getAllFilms().stream()
-                .filter(e -> e.getLikes() != null)
-                .sorted((o1, o2) -> Integer.compare(o2.getLikes().size(), o1.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
-
-        return popularFilms;
+        return filmRepository.getPopularFilms(count);
     }
 
     public Film createFilm(Film film) throws ValidationException {
-        validation.validDate(film);
-        return filmStorage.createFilm(film);
+
+        try {
+            mpaRepository.isMpaExists(film.getMpa().getId());
+        } catch (NotFoundException e) {
+            throw new ConditionsNotMetException("Такого MPA не существует");
+        }
+
+        filmRepository.createFilm(film);
+
+        if (film.getId() == null) {
+            throw new InternalServerException("Не удалось сохранить данные");
+        }
+        try {
+            genreRepository.saveGenre(film);
+        } catch (NotFoundException e) {
+            throw new ConditionsNotMetException("Такого жанра не существует");
+        }
+        log.info("Фильм {} добавлен в список", film);
+        return film;
     }
 
-    public Film updateFilm(Film film) {
-        validation.validId(film.getId());
-        validation.validFilm(film.getId());
-        validation.validDate(film);
-        return filmStorage.updateFilm(film);
+    public Film updateFilm(Film film) throws ValidationException {
+        if (filmRepository.isFilmExists(film.getId()) == null) {
+            throw new NotFoundException("Фильм с id = " + film.getId() + " не найден");
+        }
+        mpaRepository.isMpaExists(film.getMpa().getId());
+        filmRepository.updateFilm(film);
+        genreRepository.saveGenre(film);
+        log.info("Фильм с id = {} обновлен", film.getId());
+        log.info("Фильм с id = {} обновлен", film.getId());
+        return film;
     }
 
     public void addLike(Long filmId, Long userId) {
-
-        validation.validId(userId);
-        validation.validId(filmId);
-
-        validation.validUser(userId);
-        validation.validFilm(filmId);
-
-        Film film = getFilm(filmId);
-        User user = userService.getUser(userId);
-        try {
-            if (user.getFilmIdLiked() == null) {
-                log.info("Пользователь {} еще не оценил ни одного фильма", userId);
-                if (film.getLikes() == null) {
-                    log.info("У фильма {} еще нет ни одного лайка", filmId);
-                    log.info("Ставим пользователю {} лайк фильму {} и наоборот", userId, filmId);
-                    Set<Long> like = new HashSet<>(Math.toIntExact(filmId));
-                    user.setFilmIdLiked(like);
-                    Set<Long> filmLike = new HashSet<>(Math.toIntExact(userId));
-                    film.setLikes(filmLike);
-                } else {
-                    log.info("Добавляем фильму {} лайк от пользователя {}", filmId, userId);
-                    film.getLikes().add(userId);
-                    log.info("Добавляем первый лайк пользователю {} к фильму {}", userId, filmId);
-                    Set<Long> like = new HashSet<>(Math.toIntExact(filmId));
-                    user.setFilmIdLiked(like);
-                }
-            } else {
-                log.info("Пользователь {} уже оценил какие-то фильмы", userId);
-                if (film.getLikes() == null) {
-                    Set<Long> filmLike = new HashSet<>(Math.toIntExact(userId));
-                    log.info("У фильма {} не было ни одного лайка, ставим первый", filmId);
-                    film.setLikes(filmLike);
-                }
-                log.info("Добавляем пользователю {} лайк фильма {} и наоборот", userId, filmId);
-                user.getFilmIdLiked().add(filmId);
-                film.getLikes().add(userId);
-            }
-        } catch (DuplicatedDataException e) {
-            throw new DuplicatedDataException("Лайк пользователя к фильму уже поставлен");
-        }
-
+        filmRepository.isFilmExists(filmId);
+        filmRepository.addLike(filmId, userId);
+        log.info("Пользователь с id = {} поставил лайк фильму id = {}", userId, filmId);
     }
 
     public void deleteLike(Long filmId, Long userId) {
-        validation.validId(userId);
-        validation.validId(filmId);
-
-        validation.validUser(userId);
-        validation.validFilm(filmId);
-
-        Film film = getFilm(filmId);
-        User user = userService.getUser(userId);
-
-        try {
-            if (user.getFilmIdLiked() == null) {
-                log.info("Пользователь {} еще не cтавил лайки", userId);
-                if (film.getLikes() == null) {
-                    log.info("У фильма {} еще нет ни одного лайка", filmId);
-                }
-            } else {
-                log.info("Пользователь {} уже оценил какие-то фильмы", userId);
-                if (film.getLikes() == null) {
-                    log.info("У фильма {} нет лайков", filmId);
-                }
-                log.info("Удаляем лайк у пользователя {} и фильма {}", userId, filmId);
-                user.getFilmIdLiked().add(filmId);
-                film.getLikes().add(userId);
-            }
-        } catch (DuplicatedDataException e) {
-            throw new DuplicatedDataException("Лайк пользователя к фильму уже поставлен");
-        }
+        filmRepository.isFilmExists(filmId);
+        userRepository.isUserNotExists(userId);
+        filmRepository.deleteLike(filmId, userId);
+        log.info("Пользователь с id = {} удалил лайк фильму id = {}", userId, filmId);
     }
 }
+
