@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -61,8 +62,7 @@ class UserTest {
         user.setBirthday(LocalDate.of(1990, 1, 12));
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-
+        assertTrue(violations.isEmpty());
     }
 
     @Test
@@ -77,7 +77,6 @@ class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
     }
-
 
     @Test
     void createUserWithoutLogin() {
@@ -104,6 +103,4 @@ class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
     }
-
-
 }

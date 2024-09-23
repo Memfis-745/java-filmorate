@@ -4,22 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.time.LocalDate;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
+
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class Validation {
 
-    private final FilmStorage filmStorage;
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
+
 
     public void validId(Long id) {
         if (id == null) {
@@ -28,15 +27,8 @@ public class Validation {
     }
 
     public void validUser(Long id) {
-        if (!userStorage.getUserHashKey().contains(id)) {
-            throw new NotFoundException("Юзер с id = " + id + " не найден");
-        }
-    }
-
-    public void validUserFriends(Long id) {
-        User user = userStorage.getUser(id);
-        if (user.getFriends() == null) {
-            throw new NotFoundException("У пользователя = " + user + " нет друзей");
+        if (userRepository.getUser(id).isEmpty()) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
         }
     }
 
@@ -47,15 +39,12 @@ public class Validation {
         }
     }
 
-    public void validFilm(Long id) {
-        if (!filmStorage.getFilmHashKey().contains(id)) {
-            throw new NotFoundException("Юзер с id = " + id + " не найден");
+    public void validUserId(User user) {
+        if (user.getId() == null) {
+            throw new InternalServerException("Не удалось сохранить данные");
         }
-    }
-
-    public void validDate(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
-            throw new ConditionsNotMetException("Дата не может быть раньше 28.12.1895");
+        if (userRepository.getUser(user.getId()).isEmpty()) {
+            throw new NotFoundException("Пользователь с id = " + user.getId() + " не создан");
         }
     }
 
