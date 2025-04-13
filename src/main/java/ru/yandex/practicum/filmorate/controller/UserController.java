@@ -6,10 +6,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.utils.WorkInterface;
 
 import java.util.*;
 
@@ -48,6 +50,7 @@ public class UserController {
         return userService.getCommonFriends(id, otherId);
     }
 
+    @Validated(WorkInterface.Create.class)
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.info("Начало обработки запроса по добавлению нового пользователя {}", user);
@@ -75,7 +78,6 @@ public class UserController {
     public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
         log.info("Удаление друга {} у пользователя {}", friendId, id);
         userService.removeFriend(id, friendId);
-        // return userService.removeFriend(id, friendId);
     }
 
 }

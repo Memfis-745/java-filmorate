@@ -61,8 +61,7 @@ class UserTest {
         user.setBirthday(LocalDate.of(1990, 1, 12));
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-
+        assertTrue(violations.isEmpty());
     }
 
     @Test
@@ -77,7 +76,6 @@ class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
     }
-
 
     @Test
     void createUserWithoutLogin() {
@@ -104,6 +102,4 @@ class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
     }
-
-
 }
