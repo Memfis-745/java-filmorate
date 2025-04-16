@@ -55,7 +55,7 @@ public class FilmService {
         try {
             genreRepository.saveGenre(film);
         } catch (NotFoundException e) {
-            throw new ConditionsNotMetException("Такого жанра не существует");
+            throw new NotFoundException("Такого жанра не существует");
         }
         log.info("Фильм {} добавлен в список", film);
         return film;
