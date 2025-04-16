@@ -44,7 +44,7 @@ public class FilmService {
         try {
             mpaRepository.isMpaExists(film.getMpa().getId());
         } catch (NotFoundException e) {
-            throw new ConditionsNotMetException("Такого MPA не существует");
+            throw new NotFoundException("Такого MPA не существует");
         }
 
         filmRepository.createFilm(film);
