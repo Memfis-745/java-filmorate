@@ -44,7 +44,7 @@ public class FilmService {
         try {
             mpaRepository.isMpaExists(film.getMpa().getId());
         } catch (NotFoundException e) {
-            throw new ConditionsNotMetException("Такого MPA не существует");
+            throw new NotFoundException("Такого MPA не существует");
         }
 
         filmRepository.createFilm(film);
@@ -55,7 +55,7 @@ public class FilmService {
         try {
             genreRepository.saveGenre(film);
         } catch (NotFoundException e) {
-            throw new ConditionsNotMetException("Такого жанра не существует");
+            throw new NotFoundException("Такого жанра не существует");
         }
         log.info("Фильм {} добавлен в список", film);
         return film;

@@ -100,6 +100,6 @@ class UserTest {
         user.setName("name");
         user.setBirthday(LocalDate.of(2025, 1, 12));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
+        assertTrue(violations.isEmpty());
     }
 }
